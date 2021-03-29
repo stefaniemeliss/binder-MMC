@@ -1,21 +1,41 @@
 Type: Compendium
-Package: Compendium title
-Title: What the Package Does (One Line, Title Case)
+Package: MMC R analysis
+Title: Reproducible R code for MMC data descriptor
 Version: 0.0.1
 Authors@R: 
-    person(given = "Karthik",
-           family = "Ram",
+    person(given = "Stefanie",
+           family = "Meliss",
            role = c("aut", "cre"),
-           email = "karthik.ram@gmail.com",
-           comment = c(ORCID = "0000-0002-0233-1757"))
-Description: Compendium description
-License: MIT + file LICENSE
+           email = "s_meliss@outlook.com")
+Description: R analysis for MMC data descriptor
+License: CC-BY
 Depends: 
+    data.table,
     dataRetrieval,
+    devtools,
     dplyr,
     ggplot2,
+    ggpubr,
+    ggrepel,
+    grid,
+    htmltools,
+    knitr,
+    lme4,
     lubridate,
+    osfr,
+    plotly,
+    plyr,
+    psych,
+    RCurl,
+    reshape,
+    reshape2,
+    rmarkdown,
+    scales,
+    sjPlot,
     tidyr,
-    viridis
+    viridis,
+    xlsx
+Remotes: 
+    ropensci/osfr
 Encoding: UTF-8
 LazyData: true
