@@ -117,10 +117,10 @@ dfWide <- merge(dfWide, other_information, by = c("ID", "BIDS"))
 dfLong <- read.csv(paste0(dataset_name, "_experimental_data.csv"))
 
 # stimuli related files
-ozono <- read.csv("Ozono_et_al_2020_Detailed_information_about_MagicCATs.csv", stringsAsFactors = F)
-duration <- read.table("duration_magictrickfiles.txt", stringsAsFactors = F, header = T)
-marker <- read.csv("marker_magictrickfiles.csv", stringsAsFactors = F)
-memory_test <- read.csv("recognition_memory_test_incl_deviations_in_pilot.csv", stringsAsFactors = F)
+ozono <- read.csv("stim_data/Ozono_et_al_2020_Detailed_information_about_MagicCATs.csv", stringsAsFactors = F)
+duration <- read.table("stim_data/duration_magictrickfiles.txt", stringsAsFactors = F, header = T)
+marker <- read.csv("stim_data/marker_magictrickfiles.csv", stringsAsFactors = F)
+memory_test <- read.csv("stim_data/recognition_memory_test_incl_deviations_in_pilot.csv", stringsAsFactors = F)
 memory_test <- memory_test[,c("stimID", "Recognition.option.1", "Recognition.option.2", "Recognition.option.3", "Recognition.option.4", "Different.wording.in.pilot")]
 
 
@@ -701,8 +701,8 @@ extents_scan$ID <- gsub("_task.*", "", extents_scan$scan)
 psych::describe(extents_scan$slice_perc_z*100)
 psych::describe(extents_scan$slice_diff_z)
 
-sum(extents_scan$slice_diff_z==1)/dim(extents_scan)[1]
 sum(extents_scan$slice_diff_z==0)/dim(extents_scan)[1]
+sum(extents_scan$slice_diff_z==1)/dim(extents_scan)[1]
 sum(extents_scan$slice_diff_z==0)/dim(extents_scan)[1] + sum(extents_scan$slice_diff_z==1)/dim(extents_scan)[1]
 
 # quantify extent of overlap in z direction over subjects
@@ -889,7 +889,7 @@ gg_relmot <- ggplot(relmotion, aes(order_number, fd, fill = Task, label = annota
   geom_split_violin() + 
   theme_bw() + 
   facet_grid(group ~ .) + 
-  stat_summary(fun.data=data_summary, geom = "crossbar", width = 0.25, fatten = 1, show.legend = F, position = position_dodge(width = .25)) +
+  stat_summary(fun.data=data_summary, geom = "crossbar", width = 0.25, fatten = 1, show.legend = F, position = position_dodge(width = .25), color = "grey20") +
   scale_fill_grey(start = 0.5, end = .9) +
   #ggtitle("Plot of framewise displacement within each subject by group and task") +
   xlab("Subject number (within group)") + ylab("Framewise displacement (mm)") + 
@@ -969,10 +969,9 @@ gg_tsnr <- ggplot(tsnr, aes(order_number, TSNR, fill = Task, label = annotation)
   geom_split_violin() + 
   theme_bw() + 
   facet_grid(group ~ .) + 
-  stat_summary(fun.data=data_summary, geom = "crossbar", width = 0.25,fatten = 1, show.legend = F, position = position_dodge(width = .25)) +
+  stat_summary(fun.data=data_summary, geom = "crossbar", width = 0.25, fatten = 1, show.legend = F, position = position_dodge(width = .25), color = "grey20") +
   #stat_summary(fun.data=data_summary, size = 0.1, position = position_dodge(0.5), show.legend = FALSE) + 
   scale_fill_grey(start = 0.5, end = .9) +
-  #ggtitle("Plot of framewise displacement within each subject by group and task") +
   xlab("Subject number (within group)") + ylab("tSNR  values (voxels inside mask)") + 
   theme(legend.position="none") +
   coord_cartesian(ylim = c(0, y_tsnr)) +
