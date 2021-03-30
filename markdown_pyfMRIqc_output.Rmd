@@ -1,7 +1,7 @@
 ---
 title: "Summary pyfMRIqc output"
 author: "Stef Meliss"
-date: "27/03/2021"
+date: "30/03/2021"
 output: html_document
 ---
 
@@ -25,11 +25,11 @@ is_outlier <- function(x) {
 
 project <- osfr::osf_retrieve_node("eyzwb")
 
-osfr::osf_ls_files(project, pattern = "pyfMRIqc_output.csv") %>%
+osfr::osf_ls_files(project, pattern = "pyfMRIqc.csv") %>%
   osfr::osf_download(conflicts = "overwrite")
 
 # load in dataset
-scanparam <- read.csv("pyfMRIqc_output.csv")
+scanparam <- read.csv("data_pyfMRIqc.csv")
 
 # create ID column
 scanparam$ID <- gsub("sub-control0", "", scanparam$subject)
