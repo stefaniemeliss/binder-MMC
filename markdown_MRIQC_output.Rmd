@@ -26,30 +26,22 @@ is_outlier <- function(x) {
 }
 
 ### downlaod data from OSF ###
-version_official <- "fmri"
-osfr::osf_auth() # log into OSF
-project <- osfr::osf_retrieve_node("fhqb7")
-target_dir <- osfr::osf_ls_files(project, pattern = "data") # looks at all files and directories in the project and defines the match with "data"
-sub_dir <- osfr::osf_mkdir(target_dir, path = paste0(version_official)) # add folder in OSF data dir
 
+project <- osfr::osf_retrieve_node("eyzwb")
 # bold
-osfr::osf_ls_files(sub_dir, pattern = "group_bold.tsv") %>%
-  osfr::osf_download(conflicts = "overwrite", verbose = T)
-osfr::osf_ls_files(sub_dir, pattern = "bold.csv") %>%
+osfr::osf_ls_files(project, pattern = "bold") %>%
   osfr::osf_download(conflicts = "overwrite", verbose = T)
 # T1w
-osfr::osf_ls_files(sub_dir, pattern = "group_T1w.tsv") %>%
-  osfr::osf_download(conflicts = "overwrite", verbose = T)
-osfr::osf_ls_files(sub_dir, pattern = "T1w.csv") %>%
+osfr::osf_ls_files(project, pattern = "T1w") %>%
   osfr::osf_download(conflicts = "overwrite", verbose = T)
 
 # load in datasets
-scanparam <- read.delim("group_bold.tsv", stringsAsFactors = F)
-API_data <- read.csv("bold.csv", stringsAsFactors = F)
+scanparam <- read.delim("data_group_bold.tsv", stringsAsFactors = F)
+API_data <- read.csv("data_api_bold.csv", stringsAsFactors = F)
 names(API_data)[names(API_data) == "X_id"] <- "bids_name"
 
-user_t1w <- read.delim("group_T1w.tsv", stringsAsFactors = F)
-api_t1w <- read.csv("T1w.csv", stringsAsFactors = F)
+user_t1w <- read.delim("data_group_T1w.tsv", stringsAsFactors = F)
+api_t1w <- read.csv("data_api_T1w.csv", stringsAsFactors = F)
 names(api_t1w)[names(api_t1w) == "bids_meta_subject_id"] <- "bids_name"
 
 # add columns
