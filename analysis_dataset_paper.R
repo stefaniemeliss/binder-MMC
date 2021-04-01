@@ -24,6 +24,7 @@ library(lme4)
 library(ggplot2)
 library(ggrepel)
 library(data.table)
+library(gt)
 
 
 # define version --> double-check whether this is necessary or not
@@ -38,6 +39,25 @@ memoryLevels <- c("cuedRecallStrict", "cuedRecallLenient",
 memoryLabels <- c("cuedRecallStrict", "cuedRecallLenient", 
                   "allConf", "highConf", "aboveAvgConf", 
                   "rememberedStrictAboveAvg", "rememberedLenientAboveAvg", "rememberedStrictHigh", "rememberedLenientHigh")
+
+# define table labels (copied from manuscript)
+desc_t1 <- "Description of participants means (standard deviation) in each group. All participants were right-handed and fluent in English. Sex is expressed as percentage female. Ethnic background is expressed as percentage Black, Asian, and Minority Ethnic (BAME). Statistics of group comparison report Two-Sample Welch t-test and Chi-Square test for categorical (sex and percentage BAME) and continuous data (age, years of education, Corsi span, and n-back accuracy), respectively." 
+
+desc_t2 <- "Descriptive summary of deviation (in ms) between programmed and observed duration of different trial components separately for each group. Group differences were tested for significance using Welch Two Sample t-Tests." 
+
+desc_t3 <- "Encoding performance for different memory measurements and thresholds. Absolute performance captures the number of items that were encoded, relative performance relates to the percentage out of all 36 trails. One sample t-tests were carried out one-sided testing against a true mean of zero (recall & remembering) and 25% (recognition), respectively."
+
+desc_t4 <- "Average ratings and encoding likelihood computed over all trials and results of their variance decomposition.  High subject x stimulus variance suggests that the data is suitable to investigate within-person variability."
+
+desc_t5 <- "Missing slices for each scan separately for each group. The extents of the EPI mask in inferior-superior direction were compared with those of the FreeSurfer parcellation mask. The table shows the mean difference (standard deviation) [maximum] in slices for each group and scan separately together with the results of the Welch Two Sample t-Test."
+
+desc_t6 <- "Summary of seed-based functional connectivity (sFC) analysis. Using the same seed MNI coordinates as the afni_proc.py’s quality assessments, thresholded sFC maps were created and compared to corresponding network masks taken from Yeo et al. The degree of similarity is measured as Dice coefficient. Additionally, overlap (in percent) between the seed sphere and the associated network were determined."
+
+desc_x1 <- "Description of the magic tricks used as stimulus in the study. Occurrence specifies whether the trick has been presented during practice or in the experiment. The information about name, credit, phenomena category, materials and description are from Ozono et al. The wording of the options for the recognition task has been piloted and tested in behavioural samples. Any deviations in wording between the pilot and current data collection have been highlighted." 
+
+desc_x2 <- "Description of video files used in this study. For each magic trick, we included timings, file names, and descriptions for the frame of the cue image as well as for the moment(s) of surprise. The onsets of each of them have been added as markers in the PTB script and the experimental data files. All durations and timings are measured in seconds." 
+
+desc_x3 <- "Variable dictionary referencing the variables included in the MMC_experimental_data.csv file. An explanation of each variable is given to enhance usability for other researchers."
 
 # define TR
 TR <- 2
@@ -228,6 +248,17 @@ names(demogs) <- c("", "Control Group", "Experimental Group", "Statistics group 
 
 # save demogs
 xlsx::write.xlsx(demogs, file=filename_tables, sheetName = "Table_1", append = T, row.names = F) # note: row.names contain variables
+
+# create gt Table
+names(demogs) <- c("Item", "Control Group", "Experimental Group", "Statistics group comparison")
+gt_1 <- gt(data = demogs) %>% 
+  tab_source_note(source_note = paste0(desc_t1)) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(columns = everything())) 
+# show gt Table  
+gt_1
+
 
 ########## 2. Descriptives of magic tricks ########## 
 
@@ -501,6 +532,15 @@ for (i in 1:length(index_intended)){
 
 names(timings) <- c("Trial component", "Mean control group (SD) [min; max]", "Mean experimental group (SD) [min; max]", "Result Welch Two Sample t-Test")
 
+# create gt Table
+gt_2 <- gt(data = timings) %>% 
+  tab_source_note(source_note = paste0(desc_t2)) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(columns = everything())) 
+# show gt Table  
+gt_2
+
 xlsx::write.xlsx(timings, file=filename_tables, sheetName = "Table_2", append = T, row.names = F) # note: row.names contain variables
 
 ########## 7. Check encoding ########## 
@@ -558,6 +598,17 @@ names(encoding) <- c("", "Mean absolute encoding performance (SD) [min; max]","M
 
 xlsx::write.xlsx(encoding, file=filename_tables, sheetName = "Table_3", append = T, row.names = F) # note: row.names contain variables
 
+# create gt Table
+names(encoding) <- c("Level", "Mean absolute encoding performance (SD) [min; max]","Mean relative encoding performance (SD) [min; max]", "Test statistics")
+
+gt_3 <- gt(data = encoding) %>% 
+  tab_source_note(source_note = paste0(desc_t3)) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(columns = everything())) 
+# show gt Table  
+gt_3
+
 
 ########## 8. variance decomposition ########## 
 
@@ -609,6 +660,17 @@ names(vardecom) <- c("", "mean (SD)", "Subject variance", "Stimulus variance", "
 names(vardecom) <- c("", "mean all trials (SD)","mean summarised over subjects (SD)", "Subject variance", "Stimulus variance", "Subject x stimulus variance")
 
 xlsx::write.xlsx(vardecom, file=filename_tables, sheetName = "Table_4", append = T, row.names = F) # note: row.names contain variables
+
+# create gt Table
+names(vardecom) <- c("Variable", "mean all trials (SD)","mean summarised over subjects (SD)", "Subject variance", "Stimulus variance", "Subject x stimulus variance")
+
+gt_4 <- gt(data = vardecom) %>% 
+  tab_source_note(source_note = paste0(desc_t4)) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(columns = everything())) 
+# show gt Table  
+gt_4
 
 ########## 9. imaging data quality assessments ########## 
 
@@ -781,6 +843,17 @@ names(coverage) <- c("", "Scan", "Mean control group (SD) [max]", "Mean experime
 
 # write file
 xlsx::write.xlsx(coverage, file=filename_tables, sheetName = "Table_5", append = T, row.names = F, showNA = F) # note: row.names contain variables
+
+# create gt Table
+names(coverage) <- c(".", "Scan", "Mean control group (SD) [max]", "Mean experimental group (SD) [max]", "Result Welch Two Sample t-Test" )
+
+gt_5 <- gt(data = coverage) %>% 
+  tab_source_note(source_note = paste0(desc_t5)) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(columns = everything())) 
+# show gt Table  
+gt_5
 
 ########## 11. subject motion ########## 
 
@@ -1010,8 +1083,17 @@ sfc$`Intersection sphere network` <- paste0(round(100 - sfc$nonoverlap, digits =
 sfc$Network <- c("visual", "somatomotor", "default")
 sfc$`Dice coefficient` <- round(sfc$`Dice coefficient`, digits = 3)
 
-# CREATE STIMULI 6
+# CREATE TABLE 6
 sfc <- sfc[,c("Seed region", "MNI coordinates", "Size sphere", "Network", "Intersection sphere network", "Dice coefficient")]
+
+# create gt Table
+gt_6 <- gt(data = sfc) %>% 
+  tab_source_note(source_note = paste0(desc_t6)) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(columns = everything())) 
+# show gt Table  
+gt_6
 
 xlsx::write.xlsx(sfc, file=filename_tables, sheetName = "Table_6", append = T, row.names = F, showNA = F) # note: row.names contain variables
 
@@ -1042,7 +1124,14 @@ names(stim_info) <- c("Occurance", "Stimulus ID", "Name", "Credit", #"Video file
 # write file
 xlsx::write.xlsx(stim_info, file=filename_tables, sheetName = "Online-only Table_1", append = T, row.names = F, showNA = F) # note: row.names contain variables
 
-
+# create gt Table
+gt_x1 <- gt(data = stim_info) %>% 
+  tab_source_note(source_note = paste0(desc_x1)) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(columns = everything())) 
+# show gt Table  
+gt_x1
 
 # CREATE MARKER TABLE FOR PAPER (i.e. Online-only Table 2)
 
@@ -1131,6 +1220,15 @@ names(marker_long) <- c("Stimulus ID", "Video file name", "Video duration (witho
 
 # write file
 xlsx::write.xlsx(marker_long, file=filename_tables, sheetName = "Online-only Table_2", append = T, row.names = F, showNA = F) # note: row.names contain variables
+
+# create gt Table
+gt_x2 <- gt(data = marker_long) %>% 
+  tab_source_note(source_note = paste0(desc_x2)) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(columns = everything())) 
+# show gt Table  
+gt_x2
 
 # CREATE VARIABLE DICTIONARY FOR PAPER (i.e. Online-only Table 1)
 
@@ -1221,8 +1319,12 @@ vardict <- data.frame(Variable, Explanation)
 
 xlsx::write.xlsx(vardict, file=filename_tables, sheetName = "Online-only Table_3", append = T, row.names = F, showNA = F) # note: row.names contain variables
 
-
-
-
-
+# create gt Table
+gt_x3 <- gt(data = marker_long) %>% 
+  tab_source_note(source_note = paste0(desc_x3)) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(columns = everything())) 
+# show gt Table  
+gt_x3
 
