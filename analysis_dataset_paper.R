@@ -787,8 +787,6 @@ xlsx::write.xlsx(coverage, file=filename_tables, sheetName = "Table_5", append =
 # SECTION SUBJECT MOTION #
 
 # download file from preliminary AFNI processing
-
-# download all files from preliminary AFNI processing
 osfr::osf_ls_files(project, pattern = "motion.txt") %>%
   osfr::osf_download(conflicts = "overwrite")
 
@@ -993,6 +991,30 @@ all_subj <- merge(all_subj, tsnr_subj, by = c("ID"))
 
 # save data
 write.csv(all_subj, file = paste0(dataset_name, "_scan_subj_sum.csv"), row.names = F)
+
+
+########## 13. seed-based functional connectivity ########## 
+
+# download file from preliminary AFNI processing
+osfr::osf_ls_files(project, pattern = "sFC.txt") %>%
+  osfr::osf_download(conflicts = "overwrite")
+
+# read in data
+sfc <- read.table("data_sFC.txt", header = T, stringsAsFactors = FALSE, sep = '\t')
+names(sfc) <- c("Seed region", "Dice coefficient", "Size sphere", "overlapping voxel", "nonoverlap")
+
+# add more columns
+sfc$`MNI coordinates` <- c("(5L, 49P, 40S)", "(64L, 12P, 2S)", "(4R, 91P, 3I)")
+sfc$`Seed region` <- c("Left precuneus", "Left auditory cortex", "Right visual cortex")
+sfc$`Intersection sphere network` <- paste0(round(100 - sfc$nonoverlap, digits = 3), "%")
+sfc$Network <- c("visual", "somatomotor", "default")
+sfc$`Dice coefficient` <- round(sfc$`Dice coefficient`, digits = 3)
+
+# CREATE STIMULI 6
+sfc <- sfc[,c("Seed region", "MNI coordinates", "Size sphere", "Network", "Intersection sphere network", "Dice coefficient")]
+
+xlsx::write.xlsx(sfc, file=filename_tables, sheetName = "Table_6", append = T, row.names = F, showNA = F) # note: row.names contain variables
+
 
 ########## LAST. Create Online-only Tables ########## 
 
