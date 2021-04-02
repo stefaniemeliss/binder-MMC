@@ -95,26 +95,17 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
         params = list(trim = trim, scale = scale, draw_quantiles = draw_quantiles, na.rm = na.rm, ...))
 }
 
-# define summary function showing mean +/- SD
-data_summary <- function(x) { # mean + sd
-  m <- mean(x)
-  ymin <- m-sd(x)
-  ymax <- m+sd(x)
-  return(c(y=m,ymin=ymin,ymax=ymax))
-}
-
-data_summary <- function(x) { # median + mad
-  m <- median(x)
-  ymin <- m-mad(x)
-  ymax <- m+mad(x)
-  return(c(y=m,ymin=ymin,ymax=ymax))
-}
-
+# define summary function showing median
 data_summary <- function(x) { # median
   m <- median(x)
   ymin <- median(x)
   ymax <- median(x)
   return(c(y=m,ymin=ymin,ymax=ymax))
+}
+
+# function to determine outliers
+is_outlier <- function(x) {
+  return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
 }
 
 
@@ -703,7 +694,7 @@ extents$source <- ifelse(grepl("brain", extents$scan) == T, "brain",
 extents$group <- ifelse(grepl("control", extents$scan)== T, "control", 
                         ifelse(grepl("experimental", extents$scan)== T, "experimental", NA))
 
-extents$Task <- ifelse(grepl("magictrickwatching", extents$scan)== T, "Magictrick watching", 
+extents$Task <- ifelse(grepl("magictrickwatching", extents$scan)== T, "Magic trick watching", 
                        ifelse(grepl("rest", extents$scan)== T, "Resting-state", NA))
 
 extents$ID <- gsub("_task.*", "", extents$file)
@@ -922,6 +913,9 @@ for (i in seq_along(scans)){
   # compute Framewise displacement (FD, )
   subset$fd <- rowSums(subset[,2:7])
   
+  # determine whether fd is an outlier
+  subset$outlier_fd <- is_outlier(subset$fd)
+  
   # combine to new data frame
   if (i == 1){
     relmotion <- subset
@@ -946,7 +940,7 @@ fd_subj <- fd_scan %>%
                    fd_min_subj = min(fd_mean_scan), fd_max_subj = max(fd_mean_scan), number_scans = n())
 psych::describe(fd_subj$fd_mean_subj)
 
-# CREATE FIGURE 4a #
+# CREATE FIGURE 4 #
 
 # create column with id for annotation
 relmotion$annotation <- ifelse(relmotion$fd == 0 & grepl("magictrickwatching_run-1", relmotion$scan) == T, relmotion$id_number, "")
@@ -954,7 +948,7 @@ relmotion$annotation <- ifelse(relmotion$fd == 0 & grepl("magictrickwatching_run
 # define size of y coordinate
 y_mot <- max(relmotion$fd)*1.2
 
-# ggplot command
+# ggplot command figure 4a
 gg_relmot <- ggplot(relmotion, aes(order_number, fd, fill = Task, label = annotation)) + 
   geom_hline(yintercept=0.5, linetype="dashed", color = "gray") +
   geom_split_violin() + 
@@ -967,7 +961,46 @@ gg_relmot <- ggplot(relmotion, aes(order_number, fd, fill = Task, label = annota
   theme(legend.position="none") +
   coord_cartesian(ylim = c(0, y_mot)) +
   geom_label_repel(aes(label = annotation, fill = group), size = 3, nudge_y = y_mot, direction = "y", hjust = 0.5, segment.size = 0.2, segment.color = 'transparent', fill = "lightgray")
+
+# ggplot command figure 4 violin
+gg_relmot <- ggplot(relmotion, aes(order_number, fd, fill = Task, label = annotation)) + 
+  geom_hline(yintercept=0.5, linetype="dashed", color = "gray") +
+  geom_split_violin() + 
+  theme_bw() + 
+  facet_grid(group ~ .) + 
+  stat_summary(fun.data=data_summary, geom = "crossbar", width = 0.25, fatten = 1, show.legend = F, position = position_dodge(width = .25), color = "grey20") +
+  scale_fill_grey(start = 0.5, end = .9) +
+  #ggtitle("Plot of framewise displacement within each subject by group and task") +
+  xlab("Subject number (within group)") + ylab("Framewise displacement (mm)") + 
+  theme(legend.position="bottom") +
+  coord_cartesian(ylim = c(0, y_mot)) +
+  geom_label_repel(aes(label = annotation, fill = group), size = 3, nudge_y = y_mot, direction = "y", hjust = 0.5, segment.size = 0.2, segment.color = 'transparent', fill = "lightgray")
+
+# create column with id for annotation
+relmotion$annotation <- ifelse(relmotion$fd == 0 & grepl("magictrickwatching_run-1", relmotion$scan) == T, relmotion$id_number, "")
+
+# remove outlier
+relmotion_clean <- subset(relmotion, relmotion$outlier_fd == F)
+
+# define size of y coordinate
+y_mot <- max(relmotion_clean$fd)*1.2
+
+# ggplot command figure 4 hisogram
+gg_relmot <- ggplot(relmotion_clean, aes(order_number, fd, fill = Task, label = annotation)) + 
+  geom_hline(yintercept=0.5, linetype="dashed", color = "gray") +
+  geom_boxplot(outlier.size = 0.5, notch = T) + 
+  theme_bw() + 
+  facet_grid(group ~ .) + 
+  #stat_summary(fun.data=data_summary, geom = "crossbar", width = 0.25, fatten = 1, show.legend = F, position = position_dodge(width = .25), color = "grey20") +
+  scale_fill_grey(start = 0.5, end = .9) +
+  #ggtitle("Plot of framewise displacement within each subject by group and task") +
+  xlab("Subject number (within group)") + ylab("Framewise displacement (mm)") + 
+  theme(legend.position="bottom") +
+  coord_cartesian(ylim = c(0, y_mot)) +
+  geom_label_repel(aes(label = annotation, fill = group), size = 3, nudge_y = y_mot, direction = "y", hjust = 0.5, segment.size = 0.2, segment.color = 'transparent', fill = "lightgray")
 gg_relmot
+
+ggsave("Figure4.jpeg", width = 25, height = 15, unit = "cm")
 
 
 ########## 12. temporal signal-to-noise ratio ########## 
@@ -987,7 +1020,7 @@ tsnr[, c('group'):=1]
 tsnr$group <- ifelse(grepl("control", tsnr$scan)== T, "control", 
                      ifelse(grepl("experimental", tsnr$scan)== T, "experimental", NA))
 tsnr[, c('Task'):=1]
-tsnr$Task <- ifelse(grepl("magictrickwatching", tsnr$scan)== T, "Magictrick watching", 
+tsnr$Task <- ifelse(grepl("magictrickwatching", tsnr$scan)== T, "Magic trick watching", 
                     ifelse(grepl("rest", tsnr$scan)== T, "Resting-state", NA))
 tsnr[, c('ID'):=1]
 tsnr$ID <- gsub("_task.*", "", tsnr$scan)
@@ -1035,7 +1068,7 @@ tsnr$annotation <- ifelse(tsnr$observation == 1, tsnr$id_number, "")
 # define size of y coordinate
 y_tsnr <- max(tsnr$TSNR)*1.2
 
-# ggplot command
+# ggplot command figure 4b
 gg_tsnr <- ggplot(tsnr, aes(order_number, TSNR, fill = Task, label = annotation)) + 
   geom_split_violin() + 
   theme_bw() + 
@@ -1047,13 +1080,27 @@ gg_tsnr <- ggplot(tsnr, aes(order_number, TSNR, fill = Task, label = annotation)
   theme(legend.position="none") +
   coord_cartesian(ylim = c(0, y_tsnr)) +
   geom_label_repel(aes(label = annotation, fill = group), size = 3, nudge_y = y_tsnr, direction = "y", hjust = 0.5, segment.size = 0.2, segment.color = 'transparent', fill = "lightgray")
+
+# ggplot command figure 5a
+gg_tsnr <- ggplot(tsnr, aes(order_number, TSNR, fill = Task, label = annotation)) + 
+  geom_split_violin() + 
+  theme_bw() + 
+  facet_grid(group ~ .) + 
+  stat_summary(fun.data=data_summary, geom = "crossbar", width = 0.25, fatten = 1, show.legend = F, position = position_dodge(width = .25), color = "grey20") +
+  #stat_summary(fun.data=data_summary, size = 0.1, position = position_dodge(0.5), show.legend = FALSE) + 
+  scale_fill_grey(start = 0.5, end = .9) +
+  xlab("Subject number (within group)") + ylab("tSNR  values (voxels inside mask)") + 
+  theme(legend.position="bottom") +
+  coord_cartesian(ylim = c(0, y_tsnr)) +
+  geom_label_repel(aes(label = annotation, fill = group), size = 3, nudge_y = y_tsnr, direction = "y", hjust = 0.5, segment.size = 0.2, segment.color = 'transparent', fill = "lightgray")
 gg_tsnr
+ggsave("Figure5a.jpeg", width = 25, height = 8, unit = "cm")
 
 # CREATE FIGURE 4 #
 
 # combione plots for motion and tSNR with a shared legend
-ggpubr::ggarrange(gg_relmot, gg_tsnr, nrow = 2, labels = c("a", "b"), common.legend = T)
-ggsave("Figure4.jpeg", width = 25, height = 30, unit = "cm")
+#ggpubr::ggarrange(gg_relmot, gg_tsnr, nrow = 2, labels = c("a", "b"), common.legend = T)
+#ggsave("Figure4.jpeg", width = 25, height = 30, unit = "cm")
 
 # combine data from brain coverage, motion, and tSNR
 all_scan <- merge(extents_scan, fd_scan, by = c("ID", "scan"))
