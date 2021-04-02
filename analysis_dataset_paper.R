@@ -1367,7 +1367,7 @@ vardict <- data.frame(Variable, Explanation)
 xlsx::write.xlsx(vardict, file=filename_tables, sheetName = "Online-only Table_3", append = T, row.names = F, showNA = F) # note: row.names contain variables
 
 # create gt Table
-gt_x3 <- gt(data = marker_long) %>% 
+gt_x3 <- gt(data = vardict) %>% 
   tab_source_note(source_note = paste0(desc_x3)) %>%
   tab_style(
     style = cell_text(weight = "bold"),
