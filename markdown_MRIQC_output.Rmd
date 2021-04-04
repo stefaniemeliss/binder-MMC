@@ -411,7 +411,7 @@ long$source <- "API"
 # create user data
 temp_data <- scanparam[,c("bids_name", DV_plot)]
 temp_data <- reshape2::melt(temp_data, id.vars = "bids_name")
-temp_data$source <- "MAGMOT"
+temp_data$source <- "MMC data"
 
 # go through data set and replace any NAs
 j <- 0
@@ -465,7 +465,7 @@ long_t1w$source <- "API"
 # create user data
 temp_data <- user_t1w[,c("bids_name", DV_t1w)]
 temp_data <- reshape2::melt(temp_data, id.vars = "bids_name")
-temp_data$source <- "MAGMOT"
+temp_data$source <- "MMC data"
 
 # go through data set and replace any NAs
 j <- 0
@@ -618,7 +618,7 @@ i <- 1
 #DV_plot <- c("fd_mean", "fwhm_avg", "tsnr", "snr",  "summary_fg_mean",  "aor")
 for (DV in DV_plot){
 
-  fig <- create_vio(full_data, DV, "variable", "value", "source", "MAGMOT", "API")
+  fig <- create_vio(full_data, DV, "variable", "value", "source", "MMC data", "API")
 
   plt[[i]] <- as_widget(fig)
   i <- i + 1
@@ -636,7 +636,7 @@ i <- 1
 #DV_t1w <- c("inu_med", "cjv", "fwhm_avg", "snr_gm",  "summary_bg_mean")
 for (DV in DV_t1w){
 
-  fig <- create_vio(full_data_t1w, DV, "variable", "value", "source", "MAGMOT", "API")
+  fig <- create_vio(full_data_t1w, DV, "variable", "value", "source", "MMC data", "API")
 
   plt[[i]] <- as_widget(fig)
   i <- i + 1
