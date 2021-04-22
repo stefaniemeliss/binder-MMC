@@ -331,6 +331,20 @@ psych::describe(block_durInSecs)
 # duration of whole experiment
 psych::describe(dfWide$durInMins)
 
+# SECTION CODING OF MEMORY MEASUREMENT
+
+# how many trials were recalled in total
+sum(dfLong$cuedRecallLenient)
+sum(dfLong$cuedRecallStrict)
+
+# how many trials were recalled in percentage
+sum(dfLong$cuedRecallLenient)/1800
+sum(dfLong$cuedRecallStrict)/1800
+
+# calculate the difference between recall performance on strict and lenient criteria
+sum(dfLong$cuedRecallLenient) - sum(dfLong$cuedRecallStrict)
+sum(dfLong$cuedRecallLenient)/1800 - sum(dfLong$cuedRecallStrict)/1800
+
 # SECTION FMRI ACQUISITION
 
 # transform dur in secs into TR
@@ -345,6 +359,16 @@ psych::describe(dfWide$durInTR_thirdBlock)
 
 # time between experiment and memory tests
 psych::describe(dfWide$daysBetweenExpAndMemory)
+# convert to days and hours
+0.43*24 # mean 7.43 days
+0.57*24 # sd 0.57 days
+0.83*24 # min 6.83 days
+0.49*24 # max 9.49 days
+# convert hours to minutes
+0.32*60 # mean 10.32 hours
+0.68*60 # sd 13.68 hours
+0.92*60 # min 19.92 hours
+0.76*24 # max 11.76 hours
 
 # duration of memory assessment
 psych::describe(dfWide$durMemory)
@@ -500,9 +524,10 @@ name <- c("Stimulus display duration", "Fixation after stimulus display", "Fixat
 # create Table 2
 for (i in 1:length(index_intended)){
   
-  # calculate difference between intended and observed display durations and convert to mili seconds
+  # calculate difference between intended and observed display durations and convert to mili seconds and make absolute
   dfLong$diff <- dfLong[[index_actual[i]]] - dfLong[[index_intended[i]]]
   dfLong$diff <- dfLong$diff * 1000
+  #dfLong$diff <- abs(dfLong$diff)
   
   # calculate descriptives of difference
   output <- psych::describeBy(dfLong$diff, group = dfLong$group) # stimulus presentation (this is the actual magic trick + 6 seconds mock video)
@@ -994,10 +1019,11 @@ gg_relmot <- ggplot(relmotion_clean, aes(order_number, fd, fill = Task, label = 
   #stat_summary(fun.data=data_summary, geom = "crossbar", width = 0.25, fatten = 1, show.legend = F, position = position_dodge(width = .25), color = "grey20") +
   scale_fill_grey(start = 0.5, end = .9) +
   #ggtitle("Plot of framewise displacement within each subject by group and task") +
-  xlab("Subject number (within group)") + ylab("Framewise displacement (mm)") + 
+  ylab("Framewise displacement (mm)") + 
   theme(legend.position="bottom") +
   coord_cartesian(ylim = c(0, y_mot)) +
-  geom_label_repel(aes(label = annotation, fill = group), size = 3, nudge_y = y_mot, direction = "y", hjust = 0.5, segment.size = 0.2, segment.color = 'transparent', fill = "lightgray")
+  geom_label_repel(aes(label = annotation, fill = group), size = 3, nudge_y = y_mot, direction = "y", hjust = 0.5, segment.size = 0.2, segment.color = 'transparent', fill = "lightgray") + 
+  theme(axis.title.x=element_blank(), axis.text.x = element_blank(), axis.ticks = element_blank())
 gg_relmot
 
 ggsave("Figure4.jpeg", width = 25, height = 15, unit = "cm")
@@ -1089,10 +1115,11 @@ gg_tsnr <- ggplot(tsnr, aes(order_number, TSNR, fill = Task, label = annotation)
   stat_summary(fun.data=data_summary, geom = "crossbar", width = 0.25, fatten = 1, show.legend = F, position = position_dodge(width = .25), color = "grey20") +
   #stat_summary(fun.data=data_summary, size = 0.1, position = position_dodge(0.5), show.legend = FALSE) + 
   scale_fill_grey(start = 0.5, end = .9) +
-  xlab("Subject number (within group)") + ylab("tSNR  values (voxels inside mask)") + 
+  ylab("tSNR  values (voxels inside mask)") + 
   theme(legend.position="bottom") +
   coord_cartesian(ylim = c(0, y_tsnr)) +
-  geom_label_repel(aes(label = annotation, fill = group), size = 3, nudge_y = y_tsnr, direction = "y", hjust = 0.5, segment.size = 0.2, segment.color = 'transparent', fill = "lightgray")
+  geom_label_repel(aes(label = annotation, fill = group), size = 3, nudge_y = y_tsnr, direction = "y", hjust = 0.5, segment.size = 0.2, segment.color = 'transparent', fill = "lightgray") +
+  theme(axis.title.x=element_blank(), axis.text.x = element_blank(), axis.ticks = element_blank())
 gg_tsnr
 ggsave("Figure5a.jpeg", width = 25, height = 8, unit = "cm")
 
